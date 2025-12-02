@@ -1,0 +1,47 @@
+services:
+  # --- Backend Spring Boot ---
+  backend:
+    build:
+      context: ./tingeso_backend
+    container_name: toolrent-backend
+    extra_hosts:
+      # Permite que el contenedor vea servicios locales (DB y Keycloak)
+      - "host.docker.internal:host-gateway"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 1234
+      # El issuer debe coincidir EXACTAMENTE con el 'iss' del token (desde el navegador es http://localhost:9090)
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://localhost:9090/realms/toolrent-realm
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:9090/realms/toolrent-realm
+      # El contenedor necesita resolver las claves (JWKS) desde el host
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://host.docker.internal:9090/realms/toolrent-realm/protocol/openid-connect/certs
+      # Usar propiedades específicas para Docker si es necesario
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8090:8090"
+    networks:
+      - toolrent-network
+
+  # --- Frontend React + Nginx ---
+  frontend:
+    build:
+      context: ./tingeso_frontend/tingeso_frontend
+      args:
+        # IMPORTANTE: Usar 'localhost' porque Keycloak debe ser accesible desde el NAVEGADOR del usuario
+        VITE_API_SERVER: localhost
+        VITE_API_PORT: 8090
+        VITE_KEYCLOAK_URL: http://localhost:9090
+        VITE_KEYCLOAK_REALM: toolrent-realm
+        VITE_KEYCLOAK_CLIENT_ID: toolrent-frontend
+    container_name: toolrent-frontend
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+    networks:
+      - toolrent-network
+
+networks:
+  toolrent-network:
+    driver: bridge
