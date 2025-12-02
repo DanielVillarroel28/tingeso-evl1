@@ -1,0 +1,37 @@
+pipeline {
+    agent any
+    tools{
+        maven 'maven'
+    }
+    stages{
+        stage('Build maven'){
+            steps{
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/DanielVillarroel28/tingeso-evl1']])
+                    dir("tingeso_backend"){
+                        bat 'mvn clean package'
+                    }
+            }
+        }
+
+        stage('Unit Tests') {
+            steps {
+                dir("tingeso_backend"){
+                    bat 'mvn test'
+                }
+            }
+        }
+
+        stage('Build and Push Docker Image'){
+            steps{
+                dir("tingeso_backend"){
+                    script{
+                        withDockerRegistry(credentialsId: 'docker-credentials'){
+                            bat 'docker build -t danielv28/tingeso_backend:latest .'
+                            bat 'docker push danielv28/tingeso_backend:latest'
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
