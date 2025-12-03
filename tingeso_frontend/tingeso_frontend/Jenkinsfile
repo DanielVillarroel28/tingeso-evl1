@@ -1,0 +1,26 @@
+pipeline {
+    agent any
+    stages{
+        stage('Build Frontend'){
+            steps{
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/DanielVillarroel28/tingeso-evl1']])
+                dir("tingeso_frontend/tingeso_frontend"){
+                    sh "npm install" // Use 'bat' for Windows agents or 'sh' for Unix/Linux agents
+                    sh "npm run build" // Use 'bat' for Windows agents or 'sh' for Unix/Linux agents
+                }
+            }
+        }
+        stage("Build and Push Docker Image"){
+            steps{
+                dir("tingeso_frontend/tingeso_frontend"){
+                    script{
+                        withDockerRegistry(credentialsId: 'docker-credentials'){
+                            sh "docker build -t danielv28/tingeso_frontend ."
+                            sh "docker push danielv28/tingeso_frontend"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
