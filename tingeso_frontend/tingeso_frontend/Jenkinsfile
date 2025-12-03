@@ -4,6 +4,7 @@ pipeline {
 
     tools {
         nodejs 'node'  
+    }
 
     environment {
         VITE_API_SERVER = 'localhost' 
@@ -37,6 +38,7 @@ pipeline {
                 }
             }
         }
+        }
 
         stage('Build & Push Docker Image') {
             steps {
@@ -51,6 +53,4 @@ pipeline {
             }
         }
     }
-}
-}
 }
