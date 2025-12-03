@@ -1,8 +1,9 @@
+// java
 package com.example.tingeso_backend.services;
 
 import com.example.tingeso_backend.dto.LoanDTO;
-import com.example.tingeso_backend.dto.ReturnRequestDTO;
 import com.example.tingeso_backend.dto.LoanWithFineInfoDTO;
+import com.example.tingeso_backend.dto.ReturnRequestDTO;
 import com.example.tingeso_backend.entities.ClientEntity;
 import com.example.tingeso_backend.entities.FineEntity;
 import com.example.tingeso_backend.entities.LoanEntity;
@@ -11,6 +12,7 @@ import com.example.tingeso_backend.repositories.ClientRepository;
 import com.example.tingeso_backend.repositories.FineRepository;
 import com.example.tingeso_backend.repositories.LoanRepository;
 import com.example.tingeso_backend.repositories.ToolRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -20,10 +22,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -64,9 +68,44 @@ public class LoanServiceTest {
         return t;
     }
 
+    @BeforeEach
+    void setupDefaults() {
+        // por si se necesita alguna configuración común
+    }
+
     @Test
-    public void createLoan_adminProvidedClientId_createsLoanSuccessfully() {
-        // Arrange
+    void getLoansWithFineInfo_mapsFineAndFields() {
+        ClientEntity client = makeClient(1L);
+        ToolEntity tool = makeTool(2L);
+        LoanEntity loan = new LoanEntity();
+        loan.setId(10L);
+        loan.setClient(client);
+        loan.setTool(tool);
+        loan.setLoanDate(LocalDate.now().minusDays(5));
+        loan.setDueDate(LocalDate.now().plusDays(5));
+        loan.setStatus("Activo");
+
+        when(loanRepository.findAll()).thenReturn(Collections.singletonList(loan));
+
+        FineEntity fine = new FineEntity();
+        fine.setId(99L);
+        fine.setAmount(200);
+        fine.setStatus("Pagada");
+        when(fineRepository.findByLoanId(10L)).thenReturn(fine);
+
+        var dtoList = loanService.getLoansWithFineInfo();
+        assertNotNull(dtoList);
+        assertEquals(1, dtoList.size());
+        LoanWithFineInfoDTO dto = dtoList.get(0);
+        assertEquals(10L, dto.getId());
+        assertEquals("Cliente Test", dto.getClientName());
+        assertEquals("Herramienta Test", dto.getToolName());
+        assertEquals(99L, dto.getFineId());
+        assertEquals(200, dto.getFineAmount());
+    }
+
+    @Test
+    void createLoan_adminProvidedClientId_createsLoanSuccessfully() {
         ClientEntity client = makeClient(10L);
         ToolEntity tool = makeTool(20L);
 
@@ -83,29 +122,23 @@ public class LoanServiceTest {
         when(loanRepository.countByClientIdAndStatus(client.getId(), "Activo")).thenReturn(0);
         when(loanRepository.existsByClientIdAndToolIdAndStatus(client.getId(), tool.getId(), "Activo")).thenReturn(false);
 
-        LoanEntity saved = new LoanEntity();
-        saved.setId(1L);
-        saved.setClient(client);
-        saved.setTool(tool);
-        saved.setLoanDate(LocalDate.now());
-        saved.setDueDate(dto.getDueDate());
-        saved.setStatus("Activo");
-        when(loanRepository.save(any(LoanEntity.class))).thenReturn(saved);
+        when(loanRepository.save(any(LoanEntity.class))).thenAnswer(inv -> {
+            LoanEntity l = inv.getArgument(0);
+            l.setId(1L);
+            return l;
+        });
 
-        // Act
         LoanEntity result = loanService.createLoan(dto, mock(JwtAuthenticationToken.class));
 
-        // Assert
         assertNotNull(result);
         assertEquals("Activo", result.getStatus());
         assertEquals(client.getId(), result.getClient().getId());
         verify(toolRepository).save(argThat(t -> "Prestada".equals(t.getStatus())));
-        verify(kardexService).createLoanMovement(saved);
+        verify(kardexService).createLoanMovement(any(LoanEntity.class));
     }
 
     @Test
-    public void createLoan_userWithoutClientId_usesPrincipalClient() {
-        // Arrange
+    void createLoan_userWithoutClientId_usesPrincipalClient() {
         ClientEntity client = makeClient(11L);
         ToolEntity tool = makeTool(21L);
 
@@ -123,16 +156,14 @@ public class LoanServiceTest {
         when(loanRepository.countByClientIdAndStatus(client.getId(), "Activo")).thenReturn(0);
         when(loanRepository.existsByClientIdAndToolIdAndStatus(client.getId(), tool.getId(), "Activo")).thenReturn(false);
 
-        LoanEntity saved = new LoanEntity();
-        saved.setId(2L);
-        saved.setClient(client);
-        saved.setTool(tool);
-        when(loanRepository.save(any(LoanEntity.class))).thenReturn(saved);
+        when(loanRepository.save(any(LoanEntity.class))).thenAnswer(inv -> {
+            LoanEntity l = inv.getArgument(0);
+            l.setId(2L);
+            return l;
+        });
 
-        // Act
         LoanEntity result = loanService.createLoan(dto, principal);
 
-        // Assert
         assertNotNull(result);
         assertEquals(client.getId(), result.getClient().getId());
         verify(clientService).findOrCreateClient(principal);
@@ -140,8 +171,45 @@ public class LoanServiceTest {
     }
 
     @Test
-    public void processReturn_irreparableDamage_createsFineAndReturnsDTO() {
-        // Arrange
+    void createLoan_toolNotAvailable_throws() {
+        ClientEntity client = makeClient(12L);
+        ToolEntity tool = makeTool(22L);
+        tool.setStatus("Prestada");
+
+        LoanDTO dto = new LoanDTO();
+        dto.setClientId(client.getId());
+        dto.setToolId(tool.getId());
+        dto.setDueDate(LocalDate.now().plusDays(2));
+
+        when(clientRepository.findById(client.getId())).thenReturn(Optional.of(client));
+        when(toolRepository.findById(tool.getId())).thenReturn(Optional.of(tool));
+
+        Exception ex = assertThrows(RuntimeException.class, () -> loanService.createLoan(dto, mock(JwtAuthenticationToken.class)));
+        assertTrue(ex.getMessage().toLowerCase().contains("no está disponible") || ex.getMessage().toLowerCase().contains("no está disponible"));
+    }
+
+    @Test
+    void createLoan_clientHasPendingFines_throws() {
+        ClientEntity client = makeClient(13L);
+        ToolEntity tool = makeTool(23L);
+
+        LoanDTO dto = new LoanDTO();
+        dto.setClientId(client.getId());
+        dto.setToolId(tool.getId());
+        dto.setDueDate(LocalDate.now().plusDays(2));
+
+        when(clientRepository.findById(client.getId())).thenReturn(Optional.of(client));
+        when(toolRepository.findById(tool.getId())).thenReturn(Optional.of(tool));
+        when(loanRepository.findByClientIdAndDueDateBeforeAndStatus(eq(client.getId()), any(LocalDate.class), eq("Activo")))
+                .thenReturn(Collections.emptyList());
+        when(fineService.hasPendingFines(client.getId())).thenReturn(true);
+
+        Exception ex = assertThrows(RuntimeException.class, () -> loanService.createLoan(dto, mock(JwtAuthenticationToken.class)));
+        assertTrue(ex.getMessage().toLowerCase().contains("multas"));
+    }
+
+    @Test
+    void processReturn_irreparableDamage_createsFineAndReturnsDTO() {
         Long loanId = 100L;
         ClientEntity client = makeClient(30L);
         ToolEntity tool = new ToolEntity();
@@ -156,36 +224,156 @@ public class LoanServiceTest {
         loan.setTool(tool);
         loan.setStatus("Activo");
         loan.setLoanDate(LocalDate.now().minusDays(10));
-        loan.setDueDate(LocalDate.now().minusDays(1)); // overdue
+        loan.setDueDate(LocalDate.now().minusDays(1));
 
         when(loanRepository.findById(loanId)).thenReturn(Optional.of(loan));
-        // simulate save returning loan updated
-        ArgumentCaptor<LoanEntity> loanCaptor = ArgumentCaptor.forClass(LoanEntity.class);
         when(loanRepository.save(any(LoanEntity.class))).thenAnswer(inv -> inv.getArgument(0));
         when(toolRepository.save(any(ToolEntity.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        // fineRepository should return a fine when buildLoanWithFineInfoDTO is called
         FineEntity fine = new FineEntity();
         fine.setId(55L);
-        fine.setAmount((int) 500.0);
+        fine.setAmount(500);
         fine.setStatus("Pendiente");
         when(fineRepository.findByLoanId(loanId)).thenReturn(fine);
 
-        // Act
         ReturnRequestDTO req = new ReturnRequestDTO();
         req.setStatus("Irreparable");
         LoanWithFineInfoDTO dto = loanService.processReturn(loanId, req);
 
-        // Assert
         assertNotNull(dto);
         assertEquals("Devuelto", dto.getStatus());
         assertEquals(55L, dto.getFineId());
-        // verify kardex and fine service interactions
         verify(fineService).createFineForDamage(eq(loan), eq(tool.getReplacementValue()));
         verify(kardexService).createWriteOffMovement(eq(tool), anyString());
         verify(kardexService).createReturnMovement(eq(loan), anyString());
         verify(fineService).createFineForLateReturn(eq(loan));
-        // tool status should be changed to "Dada de baja"
         assertEquals("Dada de baja", tool.getStatus());
     }
+
+    @Test
+    void processReturn_damaged_createsRepairFine_and_setsRepairStatus() {
+        Long loanId = 101L;
+        ClientEntity client = makeClient(31L);
+        ToolEntity tool = makeTool(41L);
+        tool.setStatus("Prestada");
+
+        LoanEntity loan = new LoanEntity();
+        loan.setId(loanId);
+        loan.setClient(client);
+        loan.setTool(tool);
+        loan.setStatus("Activo");
+        loan.setLoanDate(LocalDate.now().minusDays(6));
+        loan.setDueDate(LocalDate.now().minusDays(1));
+
+        when(loanRepository.findById(loanId)).thenReturn(Optional.of(loan));
+        when(loanRepository.save(any(LoanEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(toolRepository.save(any(ToolEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(fineRepository.findByLoanId(loanId)).thenReturn(null);
+
+        ReturnRequestDTO req = new ReturnRequestDTO();
+        req.setStatus("Dañada");
+        LoanWithFineInfoDTO dto = loanService.processReturn(loanId, req);
+
+        assertNotNull(dto);
+        assertEquals("Devuelto", dto.getStatus());
+        verify(fineService).createFineForRepairableDamage(eq(loan));
+        verify(kardexService).createRepairMovement(eq(tool), anyString());
+        verify(kardexService).createReturnMovement(eq(loan), anyString());
+        assertEquals("En reparación", tool.getStatus());
+    }
+
+    @Test
+    void processReturn_normal_setsAvailable_and_noDamageFine() {
+        Long loanId = 102L;
+        ClientEntity client = makeClient(32L);
+        ToolEntity tool = makeTool(42L);
+        tool.setStatus("Prestada");
+
+        LoanEntity loan = new LoanEntity();
+        loan.setId(loanId);
+        loan.setClient(client);
+        loan.setTool(tool);
+        loan.setStatus("Activo");
+        loan.setLoanDate(LocalDate.now().minusDays(2));
+        loan.setDueDate(LocalDate.now().plusDays(1));
+
+        when(loanRepository.findById(loanId)).thenReturn(Optional.of(loan));
+        when(loanRepository.save(any(LoanEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(toolRepository.save(any(ToolEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(fineRepository.findByLoanId(loanId)).thenReturn(null);
+
+        ReturnRequestDTO req = new ReturnRequestDTO();
+        req.setStatus("Bueno");
+        LoanWithFineInfoDTO dto = loanService.processReturn(loanId, req);
+
+        assertNotNull(dto);
+        assertEquals("Devuelto", dto.getStatus());
+        verify(fineService, never()).createFineForDamage(any(), anyInt());
+        verify(fineService).createFineForLateReturn(eq(loan));
+        verify(kardexService).createReturnMovement(eq(loan), anyString());
+        assertEquals("Disponible", tool.getStatus());
+    }
+
+    @Test
+    void updateLoan_savesAndReturns() {
+        LoanEntity loan = new LoanEntity();
+        loan.setId(200L);
+        loan.setStatus("Activo");
+
+        when(loanRepository.save(loan)).thenReturn(loan);
+
+        LoanEntity res = loanService.updateLoan(loan);
+        assertEquals(200L, res.getId());
+        verify(loanRepository).save(loan);
+    }
+
+    @Test
+    void deleteLoan_success_whenAlreadyReturned() throws Exception {
+        Long id = 300L;
+        LoanEntity loan = new LoanEntity();
+        loan.setId(id);
+        loan.setReturnDate(LocalDate.now().minusDays(1));
+
+        when(loanRepository.findById(id)).thenReturn(Optional.of(loan));
+        doNothing().when(loanRepository).deleteById(id);
+
+        boolean deleted = loanService.deleteLoan(id);
+        assertTrue(deleted);
+        verify(loanRepository).deleteById(id);
+    }
+
+    @Test
+    void deleteLoan_throws_whenNotReturned() {
+        Long id = 301L;
+        LoanEntity loan = new LoanEntity();
+        loan.setId(id);
+        loan.setReturnDate(null);
+
+        when(loanRepository.findById(id)).thenReturn(Optional.of(loan));
+
+        Exception ex = assertThrows(Exception.class, () -> loanService.deleteLoan(id));
+        assertTrue(ex.getMessage().toLowerCase().contains("aún no ha sido devuelto") || ex.getMessage().toLowerCase().contains("no se puede eliminar"));
+    }
+
+    @Test
+    void getLoansForUser_mapsLoansForKeycloakId() {
+        String keycloakId = "kc-abc";
+        ClientEntity client = makeClient(400L);
+        client.setKeycloakId(keycloakId);
+        ToolEntity tool = makeTool(401L);
+
+        LoanEntity loan = new LoanEntity();
+        loan.setId(500L);
+        loan.setClient(client);
+        loan.setTool(tool);
+        loan.setLoanDate(LocalDate.now().minusDays(1));
+        loan.setDueDate(LocalDate.now().plusDays(4));
+        when(loanRepository.findByClientKeycloakId(keycloakId)).thenReturn(Collections.singletonList(loan));
+        when(fineRepository.findByLoanId(500L)).thenReturn(null);
+
+        var list = loanService.getLoansForUser(keycloakId);
+        assertEquals(1, list.size());
+        assertEquals(500L, list.get(0).getId());
+    }
+
 }
