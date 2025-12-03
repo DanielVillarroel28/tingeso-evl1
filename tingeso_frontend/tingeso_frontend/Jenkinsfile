@@ -1,8 +1,10 @@
 pipeline {
     agent any
     
+    // Asegúrate de tener configurada una herramienta NodeJS en: 
+    // Administrar Jenkins -> Global Tool Configuration -> NodeJS
     tools {
-        nodejs 'node' 
+        nodejs 'node'  // O el nombre que le hayas puesto a tu instalación de Node en Jenkins
     }
 
     environment {
