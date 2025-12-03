@@ -24,9 +24,7 @@ stage('Build and Push Docker Image'){
     steps{
         dir("tingeso_backend"){
             script{
-                // Configura la variable DOCKER_HOST para usar el socket de Docker Desktop
-                withEnv(["DOCKER_HOST=unix:///home/daniel/.docker/run/docker.sock"]) {
-                    
+
                     withDockerRegistry(credentialsId: 'docker-credentials'){
                         // 1. Construir la imagen
                         sh 'docker build -t danielv28/tingeso_backend:latest .'
@@ -40,4 +38,3 @@ stage('Build and Push Docker Image'){
     }
 }
     }
-}
