@@ -22,9 +22,11 @@ public class LoanEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(unique = true, nullable = false)
     private Long id;
+
     @ManyToOne
     @JoinColumn(name = "client_id", nullable = false)
     private ClientEntity client;
+
     @ManyToOne
     @JoinColumn(name = "tool_id", nullable = false)
     private ToolEntity tool;
@@ -32,6 +34,7 @@ public class LoanEntity {
     private LocalDate dueDate;
     private LocalDate returnDate;
     private String status;
+    
     @OneToMany(mappedBy = "loan", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonIgnore
     private List<FineEntity> fines;

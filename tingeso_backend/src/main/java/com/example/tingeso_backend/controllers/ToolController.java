@@ -37,14 +37,11 @@ public class ToolController {
         return ResponseEntity.ok(toolNew);
     }
 
-    
     @PutMapping("/{id}")
     public ResponseEntity<ToolEntity> updateTool(@PathVariable Long id, @RequestBody ToolEntity tool) {
         ToolEntity toolUpdated = toolService.updateTool(id, tool);
         return ResponseEntity.ok(toolUpdated);
     }
-    // -------------------------------------
-
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteToolById(@PathVariable Long id) throws Exception {

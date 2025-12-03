@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ClientRepository extends JpaRepository<ClientEntity, Long> {
+
     public ClientEntity findByRut(String rut);
 
     Optional<ClientEntity> findByKeycloakId(String keycloakId);
@@ -17,5 +18,6 @@ public interface ClientRepository extends JpaRepository<ClientEntity, Long> {
 
     @Query(value = "SELECT * FROM clients WHERE clients.rut = :rut", nativeQuery = true)
     ClientEntity findByRutNativeQuery(@Param("rut") String rut);
+
 }
 

@@ -62,32 +62,29 @@ public class ClientService {
     public ClientEntity findOrCreateClient(JwtAuthenticationToken principal) {
         //  id unico del usuario desde el token
         String keycloakId = principal.getName();
-
-        // 2. Busca el cliente en tu base de datos. Si no existe, ejecuta el código para crearlo.
+        // crear cliente si no existe
         return clientRepository.findByKeycloakId(keycloakId).orElseGet(() -> {
             System.out.println("Cliente con Keycloak ID '" + keycloakId + "' no encontrado. Creando nuevo cliente...");
 
-            // 3. Extrae todos los "claims" (datos) del token.
             Map<String, Object> claims = principal.getToken().getClaims();
 
-            // 4. Obtiene los datos estándar y personalizados.
+            // obtener datos del token
             String name = (String) claims.get("name");
             String email = (String) claims.get("email");
-            String rut = (String) claims.get("RUT");       // Atributo personalizado RUT
-            String phone = (String) claims.get("phone");     // Atributo personalizado Teléfono (en minúscula)
+            String rut = (String) claims.get("RUT");       
+            String phone = (String) claims.get("phone");     
 
-            // 5. Crea y configura la nueva entidad de cliente.
+            //  crear nuevo cliente
             ClientEntity newClient = new ClientEntity();
             newClient.setKeycloakId(keycloakId);
             newClient.setName(name);
             newClient.setEmail(email);
-            newClient.setRut(rut);       // Asigna el RUT
-            newClient.setPhone(phone);   // Asigna el teléfono
-            newClient.setStatus("Activo"); // Define un estado inicial
+            newClient.setRut(rut);      
+            newClient.setPhone(phone);   
+            newClient.setStatus("Activo"); 
 
             System.out.println("Nuevo cliente creado -> Nombre: " + name + ", RUT: " + rut);
 
-            // 6. Guarda el nuevo cliente en la base de datos y lo retorna.
             return clientRepository.save(newClient);
         });
     }
@@ -98,13 +95,10 @@ public class ClientService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró un perfil de cliente para el usuario actual."));
     }
 
-    /**
-     * Actualiza la información del cliente actualmente autenticado.
-     */
+     //Actualiza la información del cliente actualmente autenticado.
     public ClientEntity updateCurrentClient(JwtAuthenticationToken principal, ClientEntity clientDetails) {
         ClientEntity clientToUpdate = getCurrentClient(principal);
 
-        // Actualiza solo los campos permitidos
         clientToUpdate.setName(clientDetails.getName());
         clientToUpdate.setRut(clientDetails.getRut());
         clientToUpdate.setPhone(clientDetails.getPhone());

@@ -11,7 +11,7 @@ const AddEditClient = () => {
 
     const isMyProfile = location.pathname === '/profile/edit';
 
-    // Estados para los campos del formulario (ahora siempre inician vacíos)
+    // Estados para los campos del formulario (vacíos)
     const [name, setName] = useState("");
     const [rut, setRut] = useState("");
     const [phone, setPhone] = useState("");
@@ -21,8 +21,6 @@ const AddEditClient = () => {
     const [titleClientForm, setTitleClientForm] = useState("");
 
     useEffect(() => {
-        // La lógica para cargar datos ha sido eliminada.
-        // Ahora solo se establece el título del formulario.
         if (isMyProfile) {
             setTitleClientForm("Editar Mi Perfil");
         } else if (id) {

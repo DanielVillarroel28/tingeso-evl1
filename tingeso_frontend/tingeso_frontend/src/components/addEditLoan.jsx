@@ -3,7 +3,7 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import { Box, TextField, Button, FormControl, Typography } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import SearchIcon from '@mui/icons-material/Search';
-import { useKeycloak } from "@react-keycloak/web"; // 1. Importa el hook de Keycloak
+import { useKeycloak } from "@react-keycloak/web"; //hook de Keycloak
 import loanService from "../services/loan.service";
 import toolService from "../services/tool.service";
 import clientService from "../services/client.service";
@@ -11,7 +11,7 @@ import SelectionModal from "./SelectionModal";
 
 const AddEditLoan = () => {
     const { id } = useParams();
-    const { keycloak, initialized } = useKeycloak(); // 2. Usa el hook
+    const { keycloak, initialized } = useKeycloak();
 
     // Estados para los datos del préstamo
     const [toolId, setToolId] = useState("");
@@ -24,18 +24,17 @@ const AddEditLoan = () => {
     const [clients, setClients] = useState([]);
     const [isClientModalOpen, setClientModalOpen] = useState(false);
 
-    // Estados generales de la UI
+    // Estados generales
     const [toolName, setToolName] = useState("");
     const [tools, setTools] = useState([]);
     const [isToolModalOpen, setToolModalOpen] = useState(false);
     const [titleLoanForm, setTitleLoanForm] = useState("Nuevo Préstamo");
     const navigate = useNavigate();
     
-    // 3. Determina si el usuario es admin
+    // Determina si el usuario es admin
     const isAdmin = initialized && keycloak.hasRealmRole("ADMIN");
 
     useEffect(() => {
-        // Carga las herramientas siempre
         toolService.getAll().then(response => setTools(response.data));
 
         // Carga los clientes SOLO si es admin
@@ -81,7 +80,7 @@ const AddEditLoan = () => {
             <Typography variant="h4" gutterBottom>{titleLoanForm}</Typography>
             <hr />
             
-            {/* 5. Muestra la selección de cliente SOLO si es admin */}
+            {/* Muestra la selección de cliente SOLO si es admin */}
             {isAdmin && (
                 <FormControl fullWidth sx={{ mt: 2, display: 'flex', flexDirection: 'row', alignItems: 'flex-end' }}>
                     <TextField 

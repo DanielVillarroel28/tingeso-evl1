@@ -21,7 +21,7 @@ public class KardexController {
 
     @GetMapping("/")
     public ResponseEntity<List<KardexEntity>> getMovements(
-            @RequestParam(required = false) String toolName, // <-- CAMBIO AQUÍ
+            @RequestParam(required = false) String toolName,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {

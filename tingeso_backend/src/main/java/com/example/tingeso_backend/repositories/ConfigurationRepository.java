@@ -7,5 +7,7 @@ import java.util.Optional;
 
 @Repository
 public interface ConfigurationRepository extends JpaRepository<ConfigurationEntity, Long> {
+
     Optional<ConfigurationEntity> findByConfigKey(String configKey);
+
 }

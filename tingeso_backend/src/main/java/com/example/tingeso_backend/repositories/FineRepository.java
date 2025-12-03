@@ -9,6 +9,7 @@ import java.util.List;
 
 @Repository
 public interface FineRepository extends JpaRepository<FineEntity, Long> {
+
     FineEntity findByLoanId(Long loanId);
 
     @Query("SELECT f FROM FineEntity f WHERE f.loan.client.id = :clientId AND f.status = 'Pendiente'")
@@ -16,4 +17,5 @@ public interface FineRepository extends JpaRepository<FineEntity, Long> {
 
     @Query("SELECT f FROM FineEntity f WHERE f.loan.client.keycloakId = :keycloakId")
     List<FineEntity> findByUserKeycloakId(@Param("keycloakId") String keycloakId);
+
 }

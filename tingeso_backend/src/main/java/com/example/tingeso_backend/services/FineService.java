@@ -30,13 +30,13 @@ public class FineService {
                 .collect(Collectors.toList());
     }
 
-    // MÉTODO HELPER NUEVO: Convierte una FineEntity a FineDTO
+    // Convierte una FineEntity a FineDTO
     private FineDTO buildFineDTO(FineEntity fine) {
         FineDTO dto = new FineDTO();
         dto.setId(fine.getId());
         dto.setLoanId(fine.getLoan().getId());
-        dto.setClientName(fine.getLoan().getClient().getName()); // Aplanando los datos
-        dto.setToolName(fine.getLoan().getTool().getName());     // Aplanando los datos
+        dto.setClientName(fine.getLoan().getClient().getName()); 
+        dto.setToolName(fine.getLoan().getTool().getName());    
         dto.setFineType(fine.getFineType());
         dto.setAmount(fine.getAmount());
         dto.setStatus(fine.getStatus());
@@ -64,7 +64,6 @@ public class FineService {
                 // Calcular el monto total de la multa
                 int totalFineAmount = (int) overdueDays * lateFeePerDay;
 
-                // Crear la nueva entidad de multa
                 FineEntity fine = new FineEntity();
                 fine.setLoan(loan);
                 fine.setFineType("Atraso");
@@ -95,7 +94,6 @@ public class FineService {
         if (loan.getFines() == null) loan.setFines(new ArrayList<>());
         loan.getFines().add(fine);
 
-        // Actualizar el estado del cliente
         ClientEntity client = loan.getClient();
         client.setStatus("Restringido");
     }
@@ -107,7 +105,7 @@ public class FineService {
 
     @Transactional
     public void payFine(Long fineId) {
-        // 1. Buscar y actualizar la multa
+        // Buscar y actualizar la multa
         FineEntity fine = fineRepository.findById(fineId)
                 .orElseThrow(() -> new RuntimeException("Multa no encontrada"));
 
@@ -115,7 +113,7 @@ public class FineService {
         fine.setPaymentDate(LocalDate.now());
         fineRepository.save(fine);
 
-        // 2. Revisar si el cliente puede volver a estado "Activo"
+        // Revisar si el cliente puede volver a estado "Activo"
         ClientEntity client = fine.getLoan().getClient();
         boolean hasOtherPendingFines = hasPendingFines(client.getId());
 
@@ -125,7 +123,6 @@ public class FineService {
     }
 
     public void createFineForRepairableDamage(LoanEntity loan) {
-        // Obtiene el monto fijo de la configuración
         int repairAmount = configurationService.getFee("repair_fee");
 
         if (repairAmount > 0) {

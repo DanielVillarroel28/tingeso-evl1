@@ -4,5 +4,5 @@ import lombok.Data;
 
 @Data
 public class ReturnRequestDTO {
-    private String status; // "OK", "Dañada", "Irreparable"
+    private String status;
 }

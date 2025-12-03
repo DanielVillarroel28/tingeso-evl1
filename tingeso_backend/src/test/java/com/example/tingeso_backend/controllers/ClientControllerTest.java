@@ -1,4 +1,3 @@
-// java
 package com.example.tingeso_backend.controllers;
 
 import com.example.tingeso_backend.entities.ClientEntity;

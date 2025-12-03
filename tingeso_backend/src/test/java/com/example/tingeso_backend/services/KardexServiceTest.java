@@ -1,4 +1,3 @@
-// java
 package com.example.tingeso_backend.services;
 
 import com.example.tingeso_backend.entities.KardexEntity;

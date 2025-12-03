@@ -1,6 +1,4 @@
-// En una nueva carpeta "dto" o junto a tu LoanDTO
 package com.example.tingeso_backend.dto;
-
 import lombok.Data;
 import java.time.LocalDate;
 

@@ -17,11 +17,14 @@ public class ToolEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(unique = true, nullable = false)
     private Long id;
+
     @NotEmpty
     private String name;
+
     @NotEmpty
     private String category;
     private String stateInitial;
+    
     @Min(value = 1)
     private int replacementValue;
     private int AvailableStock;

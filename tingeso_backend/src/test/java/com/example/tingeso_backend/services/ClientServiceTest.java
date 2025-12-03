@@ -1,4 +1,3 @@
-// java
 package com.example.tingeso_backend.services;
 
 import com.example.tingeso_backend.entities.ClientEntity;
@@ -65,7 +64,7 @@ class ClientServiceTest {
 
     @Test
     void deleteClient_existingId_returnsTrue() throws Exception {
-        // el servicio llama directamente a deleteById, por eso mockeamos esa interacción
+    
         doNothing().when(clientRepository).deleteById(1L);
 
         boolean result = clientService.deleteClient(1L);

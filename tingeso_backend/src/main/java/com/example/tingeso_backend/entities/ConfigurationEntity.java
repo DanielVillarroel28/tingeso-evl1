@@ -7,13 +7,11 @@ import lombok.Data;
 @Table(name = "configurations")
 @Data
 public class ConfigurationEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    
     @Column(unique = true, nullable = false)
-    private String configKey; // "daily_rental_fee", "daily_late_fee"
-
-    private String configValue; // El valor de la tarifa
+    private String configKey; 
+    private String configValue;
 }

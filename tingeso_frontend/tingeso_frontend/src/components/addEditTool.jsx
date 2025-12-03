@@ -28,7 +28,7 @@ const AddEditTool = () => {
         };
 
         if (id) {
-            // Lógica para actualizar (si decides implementarla)
+            // Lógica para actualizar
             toolService.update(id, tool)
                 .then(() => navigate("/tools/list"))
                 .catch(error => console.error("Error al actualizar la herramienta.", error));

@@ -43,7 +43,7 @@ public class LoanController {
     @PostMapping("/{id}/return")
     public ResponseEntity<LoanWithFineInfoDTO> processReturn(
             @PathVariable Long id,
-            @RequestBody ReturnRequestDTO returnRequest) { // <-- Recibe el DTO
+            @RequestBody ReturnRequestDTO returnRequest) { 
         LoanWithFineInfoDTO updatedLoan = loanService.processReturn(id, returnRequest);
         return ResponseEntity.ok(updatedLoan);
     }
@@ -57,7 +57,6 @@ public class LoanController {
 
     @PostMapping("/")
     public ResponseEntity<?> createLoan(@Valid @RequestBody LoanDTO loanRequest, JwtAuthenticationToken principal) {
-        // Pasamos el 'principal' (la sesión del usuario) al servicio
         LoanEntity newLoan = loanService.createLoan(loanRequest, principal);
         return new ResponseEntity<>(newLoan, HttpStatus.CREATED);
     }
