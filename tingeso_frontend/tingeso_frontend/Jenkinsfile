@@ -1,35 +1,60 @@
 pipeline {
     agent any
     
-    // Aquí definimos tus variables del .env
     environment {
-        // OJO: Lee la advertencia abajo sobre "localhost"
-        API_SERVER_VAL = 'localhost' 
-        API_PORT_VAL = '8090'
-        KEYCLOAK_URL_VAL = 'http://localhost:9090'
-        KEYCLOAK_REALM_VAL = 'toolrent-realm'
-        KEYCLOAK_CLIENT_ID_VAL = 'toolrent-frontend'
+        // Definimos las variables para usarlas en el script
+        VITE_API_SERVER = 'localhost' 
+        VITE_API_PORT = '8090'
+        VITE_KEYCLOAK_URL = 'http://localhost:9090'
+        VITE_KEYCLOAK_REALM = 'toolrent-realm'
+        VITE_KEYCLOAK_CLIENT_ID = 'toolrent-frontend'
     }
 
-    stages{
-        stage("Build and Push Docker Image"){
-            steps{
-                // Asegúrate que la ruta sea correcta donde está el Dockerfile
-                dir("tingeso_frontend/tingeso_frontend"){ 
-                    script{
-                        withDockerRegistry(credentialsId: 'docker-credentials'){
-                            // Usamos las variables de entorno en los build-args
-                            sh """
-                                docker build \
-                                --build-arg VITE_API_SERVER=${API_SERVER_VAL} \
-                                --build-arg VITE_API_PORT=${API_PORT_VAL} \
-                                --build-arg VITE_KEYCLOAK_URL=${KEYCLOAK_URL_VAL} \
-                                --build-arg VITE_KEYCLOAK_REALM=${KEYCLOAK_REALM_VAL} \
-                                --build-arg VITE_KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID_VAL} \
-                                -t danielv28/tingeso_frontend .
-                            """
+    stages {
+        stage('Checkout') {
+            steps {
+                // Descargamos el código
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/DanielVillarroel28/tingeso-evl1']])
+            }
+        }
+
+        stage('Install & Build (Jenkins)') {
+            steps {
+                // Entramos a la carpeta donde está el package.json
+                dir("tingeso_frontend/tingeso_frontend") { 
+                    script {
+                        // 1. Crear el archivo .env físico para que el build lo tome
+                        sh """
+                            echo "VITE_API_SERVER=${VITE_API_SERVER}" > .env
+                            echo "VITE_API_PORT=${VITE_API_PORT}" >> .env
+                            echo "VITE_KEYCLOAK_URL=${VITE_KEYCLOAK_URL}" >> .env
+                            echo "VITE_KEYCLOAK_REALM=${VITE_KEYCLOAK_REALM}" >> .env
+                            echo "VITE_KEYCLOAK_CLIENT_ID=${VITE_KEYCLOAK_CLIENT_ID}" >> .env
+                        """
+
+                        // 2. Instalar dependencias y construir
+                        sh 'npm install'
+                        sh 'npm run build' 
+                        
+                        // Esto generará la carpeta ./dist dentro de tingeso_frontend/tingeso_frontend
+                    }
+                }
+            }
+        }
+
+        stage('Build & Push Docker Image') {
+            steps {
+                dir("tingeso_frontend/tingeso_frontend") {
+                    script {
+                        withDockerRegistry(credentialsId: 'docker-credentials') {
+                            // 1. Construir la imagen
+                            // Como ya existe la carpeta 'dist' (del paso anterior), 
+                            // el Dockerfile la copiará directamente.
+                            // YA NO pasamos build-args, porque el código ya está compilado con las variables.
+                            sh 'docker build -t danielv28/tingeso_frontend:latest .'
                             
-                            sh "docker push danielv28/tingeso_frontend"
+                            // 2. Subir la imagen
+                            sh 'docker push danielv28/tingeso_frontend:latest'
                         }
                     }
                 }
