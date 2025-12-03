@@ -1,9 +1,7 @@
+version: "3.8"
 services:
   # --- Backend Spring Boot ---
-  backend:
-    build:
-      context: ./tingeso_backend
-    container_name: toolrent-backend
+  backend1:
     extra_hosts:
       # Permite que el contenedor vea servicios locales (DB y Keycloak)
       - "host.docker.internal:host-gateway"
@@ -24,23 +22,35 @@ services:
       - toolrent-network
 
   # --- Frontend React + Nginx ---
-  frontend:
-    build:
-      context: ./tingeso_frontend/tingeso_frontend
-      args:
-        # IMPORTANTE: Usar 'localhost' porque Keycloak debe ser accesible desde el NAVEGADOR del usuario
-        VITE_API_SERVER: localhost
-        VITE_API_PORT: 8090
-        VITE_KEYCLOAK_URL: http://localhost:9090
-        VITE_KEYCLOAK_REALM: toolrent-realm
-        VITE_KEYCLOAK_CLIENT_ID: toolrent-frontend
-    container_name: toolrent-frontend
+  # =========================
+  # FRONTENDS
+  # =========================
+  frontend1:
+    image: danielv28/tingeso_frontend:latest
     depends_on:
-      - backend
+      - nginx-backend
+    networks: toolrent-network
+
+nginx-frontend:
+    image: nginx:latest
     ports:
       - "5173:80"
-    networks:
-      - toolrent-network
+    volumes:
+      - ./nginx-frontend.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - frontend1
+    networks: toolrent-network
+
+nginx-backend:
+    image: nginx:latest
+    ports:
+      - "8090:8090"
+    volumes:
+      - ./nginx-backend.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - backend1
+    networks: toolrent-network
+
 
 networks:
   toolrent-network:
