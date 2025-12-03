@@ -1,6 +1,10 @@
 pipeline {
     agent any
     
+    tools {
+        nodejs 'node' 
+    }
+
     environment {
         // Definimos las variables para usarlas en el script
         VITE_API_SERVER = 'localhost' 
