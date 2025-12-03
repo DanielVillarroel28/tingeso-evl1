@@ -1,6 +1,4 @@
-// language: java
 package com.example.tingeso_backend.services;
-
 import com.example.tingeso_backend.entities.ToolEntity;
 import com.example.tingeso_backend.repositories.ToolRepository;
 import org.junit.jupiter.api.Test;

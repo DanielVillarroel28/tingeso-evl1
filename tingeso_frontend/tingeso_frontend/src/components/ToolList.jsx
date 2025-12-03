@@ -22,7 +22,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useKeycloak } from "@react-keycloak/web"; // 1. Import the Keycloak hook
 
-// The Row component does not need any changes
+
 function Row({ groupName, instances, handleEdit, handleDelete }) {
   const [open, setOpen] = useState(false);
   
@@ -147,12 +147,13 @@ const ToolList = () => {
 
     return (
         <Box sx={{ margin: 2 }}>
-            {/* 4. Conditionally render the button */}
+            {keycloak.hasRealmRole("ADMIN") && (
                 <Link to="/tools/add" style={{ textDecoration: "none" }}>
                     <Button variant="contained" color="primary" startIcon={<AddIcon />}>
                         Añadir Nueva Herramienta
                     </Button>
                 </Link>
+            )}
             
 
             <TableContainer component={Paper} sx={{ mt: 2 }}>
