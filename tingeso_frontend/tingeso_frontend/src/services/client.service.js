@@ -24,7 +24,7 @@ const getMyProfile = () => {
     return httpClient.get('/api/v1/clients/me');
 }
 
-// Actualiza los datos del perfil del usuario actual
+
 const updateMyProfile = data => {
     return httpClient.put('/api/v1/clients/me', data);
 }

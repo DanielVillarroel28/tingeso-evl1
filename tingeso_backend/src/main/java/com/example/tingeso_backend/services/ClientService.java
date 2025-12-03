@@ -74,7 +74,6 @@ public class ClientService {
             String rut = (String) claims.get("RUT");       
             String phone = (String) claims.get("phone");     
 
-            //  crear nuevo cliente
             ClientEntity newClient = new ClientEntity();
             newClient.setKeycloakId(keycloakId);
             newClient.setName(name);

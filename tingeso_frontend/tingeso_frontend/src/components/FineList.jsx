@@ -11,19 +11,16 @@ const FineList = () => {
     const { keycloak, initialized } = useKeycloak();
 
     useEffect(() => {
-        // 1. No hacer nada hasta que Keycloak esté completamente inicializado Y el usuario autenticado.
+       // Autenticación del usuario
         if (!initialized || !keycloak.authenticated) {
             return;
         }
 
-        // --- EL PUNTO CLAVE DE DEPURACIÓN ---
-        // Revisa la consola de tu navegador para ver qué roles tiene el usuario actual.
         console.log("Keycloak inicializado. Verificando roles...");
         console.log("Roles del usuario:", keycloak.realmAccess?.roles);
 
         const isAdmin = keycloak.hasRealmRole("ADMIN");
         console.log("¿El usuario es ADMIN?", isAdmin);
-        // ------------------------------------
 
         if (isAdmin) {
             console.log("Decisión: El usuario es ADMIN. Solicitando todas las multas.");

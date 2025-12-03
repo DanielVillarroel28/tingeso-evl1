@@ -18,7 +18,6 @@ const SelectionModal = ({ open, onClose, onSelect, data, title, columns }) => {
     const [filter, setFilter] = useState('');
 
     const filteredData = data.filter(item =>
-        // Busca en todos los campos visibles del item
         columns.some(col =>
             String(item[col.field]).toLowerCase().includes(filter.toLowerCase())
         )

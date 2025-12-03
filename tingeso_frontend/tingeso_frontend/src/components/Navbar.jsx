@@ -9,7 +9,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import Sidemenu from "./Sidemenu";
 import { useState } from "react";
 import { useKeycloak } from "@react-keycloak/web";
-import { Link, useNavigate } from "react-router-dom"; // 1. Importa Link
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -39,17 +39,15 @@ export default function Navbar() {
             <MenuIcon />
           </IconButton>
 
-          {/* --- CORRECCIÓN AQUÍ --- */}
-          {/* 2. Envuelve Typography con el componente Link */}
           <Link 
-            to="/home" // La dirección a la que quieres ir (ej: /home, /dashboard, o /)
+            to="/home" 
             style={{ textDecoration: 'none', color: 'inherit', flexGrow: 1 }}
           >
             <Typography variant="h5" component="div">
               ToolRent: Tu herramienta definitiva
             </Typography>
           </Link>
-          {/* ------------------------- */}
+
 
           {initialized && (
             <>

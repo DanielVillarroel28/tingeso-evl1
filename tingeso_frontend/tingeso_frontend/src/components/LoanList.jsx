@@ -28,7 +28,6 @@ const LoanList = () => {
     const [isModalOpen, setModalOpen] = useState(false);
     const [selectedLoanId, setSelectedLoanId] = useState(null);
     
-    // Determine if the user is an admin once
     const isAdmin = initialized && keycloak.hasRealmRole("ADMIN");
 
     const fetchLoans = () => {
@@ -126,7 +125,7 @@ const LoanList = () => {
                                     ) : "Sin multa"}
                                 </TableCell>
                                 <TableCell>
-                                    {/* --- CORRECTION HERE: Conditional rendering for admin buttons --- */}
+                                    {/* */}
                                     {isAdmin && (
                                         <>
                                             <Button variant="contained" color="info" size="small" onClick={() => handleEdit(loan.id)} startIcon={<EditIcon />}>Editar</Button>
@@ -134,7 +133,7 @@ const LoanList = () => {
                                         </>
                                     )}
                                     
-                                    {/* The "Devolver" button remains visible to all users for active loans */}
+                                    {/*  */}
                                     {loan.status === 'Activo' && (
                                         <Button variant="contained" color="success" size="small" onClick={() => handleOpenReturnModal(loan.id)} style={{ marginLeft: "0.5rem" }}>Devolver</Button>
                                     )}

@@ -18,16 +18,12 @@ import configurationService from "../services/configuration.service";
 import toolService from "../services/tool.service";
 
 const ManageFees = () => {
-    // State for the daily late fee
+
     const [lateFee, setLateFee] = useState(0);
-    // State for the repairable damage fee
     const [repairFee, setRepairFee] = useState(0);
-    // State for the list of tools and their replacement values
     const [tools, setTools] = useState([]);
-    // State for user feedback messages
     const [message, setMessage] = useState("");
 
-    // Load initial data from the backend
     const init = () => {
         configurationService.getLateFee()
             .then(response => setLateFee(response.data))
@@ -46,13 +42,11 @@ const ManageFees = () => {
         init();
     }, []);
 
-    // Display a feedback message and clear it after 3 seconds
     const showMessage = (text) => {
         setMessage(text);
         setTimeout(() => setMessage(""), 3000);
     };
 
-    // Save the daily late fee
     const handleSaveLateFee = (e) => {
         e.preventDefault();
         const feeData = { value: parseInt(lateFee, 10) };
@@ -61,7 +55,6 @@ const ManageFees = () => {
             .catch(error => console.error("Error updating late fee.", error));
     };
 
-    // Save the repairable damage fee
     const handleSaveRepairFee = (e) => {
         e.preventDefault();
         const feeData = { value: parseInt(repairFee, 10) };
@@ -70,7 +63,6 @@ const ManageFees = () => {
             .catch(error => console.error("Error updating repair fee.", error));
     };
 
-    // Update the state for a specific tool's replacement value as the user types
     const handleReplacementValueChange = (id, value) => {
         setTools(prevTools =>
             prevTools.map(tool =>
@@ -79,7 +71,6 @@ const ManageFees = () => {
         );
     };
 
-    // Save the changes for a specific tool
     const handleSaveTool = (toolToSave) => {
         toolService.update(toolToSave.id, { ...toolToSave, replacementValue: parseInt(toolToSave.replacementValue, 10) })
             .then(() => showMessage(`Valor de reposición para '${toolToSave.name}' actualizado.`))
@@ -94,7 +85,7 @@ const ManageFees = () => {
 
             {message && <Alert severity="success" sx={{ mb: 2 }}>{message}</Alert>}
 
-            {/* SECTION 1: Daily Late Fee */}
+            {/*  */}
             <Paper component="form" onSubmit={handleSaveLateFee} sx={{ p: 2, mb: 4 }}>
                 <Typography variant="h6">Tarifa Diaria por Atraso</Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
@@ -113,7 +104,7 @@ const ManageFees = () => {
                 </Box>
             </Paper>
 
-            {/* SECTION 2: Repairable Damage Fee */}
+            {/*  */}
             <Paper component="form" onSubmit={handleSaveRepairFee} sx={{ p: 2, mb: 4 }}>
                 <Typography variant="h6">Cargo Fijo por Daño Reparable</Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
@@ -132,7 +123,7 @@ const ManageFees = () => {
                 </Box>
             </Paper>
 
-            {/* SECTION 3: Replacement Values per Tool */}
+            {/*  */}
             <Typography variant="h6">Valores de Reposición por Herramienta</Typography>
             <TableContainer component={Paper}>
                 <Table>

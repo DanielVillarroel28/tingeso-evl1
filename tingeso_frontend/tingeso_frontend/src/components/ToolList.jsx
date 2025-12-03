@@ -20,7 +20,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { useKeycloak } from "@react-keycloak/web"; // 1. Import the Keycloak hook
+import { useKeycloak } from "@react-keycloak/web"; 
 
 
 function Row({ groupName, instances, handleEdit, handleDelete }) {
@@ -98,9 +98,8 @@ function Row({ groupName, instances, handleEdit, handleDelete }) {
 const ToolList = () => {
     const [groupedTools, setGroupedTools] = useState([]);
     const navigate = useNavigate();
-    const { keycloak, initialized } = useKeycloak(); // 2. Use the hook
+    const { keycloak, initialized } = useKeycloak(); 
 
-    // 3. Determine if the user is an admin
     const isAdmin = initialized && keycloak.hasRealmRole("ADMIN");
 
     const init = () => {
@@ -140,7 +139,6 @@ const ToolList = () => {
         }
     };
     
-    // Show a loading message while Keycloak initializes
     if (!initialized) {
         return <Typography sx={{ margin: 2 }}>Cargando...</Typography>;
     }

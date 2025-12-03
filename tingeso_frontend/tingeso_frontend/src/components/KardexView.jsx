@@ -77,7 +77,7 @@ const KardexView = () => {
                     <MenuItem value=""><em>Todas</em></MenuItem>
                     {uniqueToolNames.map(name => (
                         <MenuItem key={name} value={name}>
-                            {/* Capitalizar para mostrarlo bonito en el menú */}
+                            {/* */}
                             {name.charAt(0).toUpperCase() + name.slice(1)}
                         </MenuItem>
                     ))}

@@ -26,10 +26,7 @@ stage('Build and Push Docker Image'){
             script{
 
                     withDockerRegistry(credentialsId: 'docker-credentials'){
-                        // 1. Construir la imagen
                         sh 'docker build -t danielv28/tingeso_backend:latest .'
-                        
-                        // 2. Subir la imagen
                         sh 'docker push danielv28/tingeso_backend:latest'
                     }
                 }

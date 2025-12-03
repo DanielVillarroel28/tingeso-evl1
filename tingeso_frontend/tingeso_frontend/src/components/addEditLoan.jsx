@@ -97,7 +97,7 @@ const AddEditLoan = () => {
                 </FormControl>
             )}
 
-            {/* Selección de Herramienta (siempre visible) */}
+            {/* Selección de Herramienta  */}
             <FormControl fullWidth sx={{ mt: 2, display: 'flex', flexDirection: 'row', alignItems: 'flex-end' }}>
                 <TextField label="Herramienta Seleccionada" value={toolName} required disabled fullWidth variant="outlined" />
                 <Button variant="contained" onClick={() => setToolModalOpen(true)} startIcon={<SearchIcon />} sx={{ ml: 1 }}>
@@ -105,7 +105,7 @@ const AddEditLoan = () => {
                 </Button>
             </FormControl>
 
-            {/* Campos de Fecha (siempre visibles) */}
+            {/* Campos de Fecha */}
             <FormControl fullWidth sx={{ mt: 2 }}>
                 <TextField label="Fecha de Préstamo" type="date" value={loanDate} disabled InputLabelProps={{ shrink: true }} />
             </FormControl>

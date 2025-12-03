@@ -65,14 +65,11 @@ public class LoanService {
     }
 
 
-    /**
-     * Crea un nuevo préstamo, aplicando todas las validaciones de negocio.
-     */
+    //Crea un nuevo préstamo, aplicando todas las validaciones de negocio.
+
     @Transactional
     public LoanEntity createLoan(LoanDTO loanRequest, JwtAuthenticationToken principal) {
         ClientEntity client;
-
-        // --- LÓGICA CONDICIONAL AQUÍ ---
         if (loanRequest.getClientId() != null) {
             // Flujo para ADMIN: Se proporcionó un ID de cliente
             client = clientRepository.findById(loanRequest.getClientId())
@@ -81,7 +78,6 @@ public class LoanService {
             // Flujo para USER: No se proporcionó ID, usar el del token
             client = clientService.findOrCreateClient(principal);
         }
-        // ---------------------------------
 
         // El resto de la lógica no cambia
         ToolEntity tool = toolRepository.findById(loanRequest.getToolId())
@@ -111,9 +107,7 @@ public class LoanService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Procesa la devolución de una herramienta, calcula multas y actualiza estados.
-     */
+// Procesa la devolución de una herramienta, calcula multas y actualiza estados.
     @Transactional
     public LoanWithFineInfoDTO processReturn(Long loanId, ReturnRequestDTO returnRequest) {
         LoanEntity loan = loanRepository.findById(loanId)
@@ -153,7 +147,7 @@ public class LoanService {
         return buildLoanWithFineInfoDTO(savedLoan);
     }
 
-    // ✅ Crea un método helper para construir el DTO
+    // Crea un método helper para construir el DTO
     private LoanWithFineInfoDTO buildLoanWithFineInfoDTO(LoanEntity loan) {
         LoanWithFineInfoDTO dto = new LoanWithFineInfoDTO();
         dto.setId(loan.getId());
@@ -174,9 +168,7 @@ public class LoanService {
         return dto;
     }
 
-    /**
-     * Centraliza todas las validaciones de negocio antes de crear un préstamo.
-     */
+    //Centraliza todas las validaciones de negocio antes de crear un préstamo.
     private void validateLoanRequest(ClientEntity client, ToolEntity tool, LocalDate dueDate) {
         if (dueDate.isBefore(LocalDate.now())) {
             throw new IllegalArgumentException("La fecha de devolución no puede ser anterior a la fecha actual.");
@@ -201,29 +193,25 @@ public class LoanService {
         }
     }
 
-    /**
-     * Actualiza un préstamo existente.
-     */
+    //Actualiza un préstamo existente.
     public LoanEntity updateLoan(LoanEntity loan) {
         return loanRepository.save(loan);
     }
 
-    /**
-     * Elimina un préstamo por su ID.
-     */
+    // Elimina un préstamo por su ID.
     @Transactional
     public boolean deleteLoan(Long id) throws Exception {
-        // 1. Buscar el préstamo en la base de datos
+        // Buscar el préstamo en la base de datos
         LoanEntity loan = loanRepository.findById(id)
                 .orElseThrow(() -> new Exception("No se encontró el préstamo con ID: " + id));
 
-        // 2. Validar que la fecha de devolución real exista
+        // Validar que la fecha de devolución real exista
         if (loan.getReturnDate() == null) {
             // Si es nula, lanzar una excepción con un mensaje claro
             throw new Exception("No se puede eliminar un préstamo que aún no ha sido devuelto.");
         }
 
-        // 3. Si la validación pasa, proceder con la eliminación
+        // Si la validación pasa, proceder con la eliminación
         try {
             loanRepository.deleteById(id);
             return true;

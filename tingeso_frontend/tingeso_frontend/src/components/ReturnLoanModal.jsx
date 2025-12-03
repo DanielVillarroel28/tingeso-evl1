@@ -12,7 +12,7 @@ import {
 import { useState } from 'react';
 
 const ReturnLoanModal = ({ open, onClose, onSubmit }) => {
-    const [toolStatus, setToolStatus] = useState('OK'); // Estado por defecto
+    const [toolStatus, setToolStatus] = useState('OK');
 
     const handleSubmit = () => {
         onSubmit(toolStatus);

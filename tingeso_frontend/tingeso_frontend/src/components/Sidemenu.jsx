@@ -1,8 +1,6 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { useKeycloak } from "@react-keycloak/web";
-
-// Importaciones de Material-UI
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
 import List from "@mui/material/List";
@@ -10,8 +8,6 @@ import Divider from "@mui/material/Divider";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-
-// Importaciones de Íconos
 import HomeIcon from "@mui/icons-material/Home";
 import HandymanIcon from '@mui/icons-material/Handyman';
 import MoreTimeIcon from "@mui/icons-material/MoreTime";
@@ -27,15 +23,13 @@ export default function Sidemenu({ open, toggleDrawer }) {
   const navigate = useNavigate();
   const { keycloak, initialized } = useKeycloak();
 
-  // Es una buena práctica esperar a que Keycloak se inicialice
-  // para evitar renderizados incorrectos o errores.
   if (!initialized) {
-    return null; // No renderiza nada hasta que la autenticación esté lista.
+    return null; 
   }
 
   const listOptions = () => (
     <Box
-      sx={{ width: 250 }} // Se recomienda añadir un ancho al menú
+      sx={{ width: 250 }} 
       role="presentation"
       onClick={toggleDrawer(false)}
     >
@@ -68,7 +62,7 @@ export default function Sidemenu({ open, toggleDrawer }) {
           <ListItemText primary="Tarifas y multas" />
         </ListItemButton>
 
-        {/* Renderizado condicional: Solo visible para el rol "ADMIN" */}
+        {/* Solo visible para el rol "ADMIN" */}
         {keycloak.tokenParsed?.realm_access?.roles?.includes("ADMIN") && (
           <ListItemButton onClick={() => navigate("/fees")}>
             <ListItemIcon><AnalyticsIcon /></ListItemIcon>
@@ -80,7 +74,7 @@ export default function Sidemenu({ open, toggleDrawer }) {
       <Divider />
 
       <List>
-        {/* Renderizado condicional: Solo visible para el rol "ADMIN" */}
+        {/* Solo visible para el rol "ADMIN" */}
         {keycloak.tokenParsed?.realm_access?.roles?.includes("ADMIN") && (
           <ListItemButton onClick={() => navigate("/kardex")}>
             <ListItemIcon><DiscountIcon /></ListItemIcon>
