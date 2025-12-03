@@ -2,36 +2,82 @@ version: "3.8"
 services:
   # --- Backend Spring Boot ---
   backend1:
+    image: danielv28/tingeso_backend:latest # <--- FALTABA LA IMAGEN (Agregada)
     extra_hosts:
-      # Permite que el contenedor vea servicios locales (DB y Keycloak)
       - "host.docker.internal:host-gateway"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/postgres
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: 1234
-      # El issuer debe coincidir EXACTAMENTE con el 'iss' del token (desde el navegador es http://localhost:9090)
       SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://localhost:9090/realms/toolrent-realm
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:9090/realms/toolrent-realm
-      # El contenedor necesita resolver las claves (JWKS) desde el host
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://host.docker.internal:9090/realms/toolrent-realm/protocol/openid-connect/certs
-      # Usar propiedades específicas para Docker si es necesario
       SPRING_PROFILES_ACTIVE: docker
-    ports:
-      - "8090:8090"
+    # ports: 
+      # - "8090:8090" <--- COMENTADO: No puedes exponer el 8090 aquí y en nginx-backend a la vez.
+      # Dejamos que nginx-backend maneje el tráfico externo.
+    networks:
+      - toolrent-network
+    
+  backend2:
+    image: danielv28/tingeso_backend:latest # <--- FALTABA LA IMAGEN (Agregada)
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 1234
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://localhost:9090/realms/toolrent-realm
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:9090/realms/toolrent-realm
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://host.docker.internal:9090/realms/toolrent-realm/protocol/openid-connect/certs
+      SPRING_PROFILES_ACTIVE: docker
+    # ports: 
+      # - "8090:8090" <--- COMENTADO: No puedes exponer el 8090 aquí y en nginx-backend a la vez.
+      # Dejamos que nginx-backend maneje el tráfico externo.
+    networks:
+      - toolrent-network
+
+  backend3:
+    image: danielv28/tingeso_backend:latest # <--- FALTABA LA IMAGEN (Agregada)
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 1234
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://localhost:9090/realms/toolrent-realm
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:9090/realms/toolrent-realm
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://host.docker.internal:9090/realms/toolrent-realm/protocol/openid-connect/certs
+      SPRING_PROFILES_ACTIVE: docker
+    # ports: 
+      # - "8090:8090" <--- COMENTADO: No puedes exponer el 8090 aquí y en nginx-backend a la vez.
+      # Dejamos que nginx-backend maneje el tráfico externo.
     networks:
       - toolrent-network
 
   # --- Frontend React + Nginx ---
-  # =========================
-  # FRONTENDS
-  # =========================
   frontend1:
     image: danielv28/tingeso_frontend:latest
     depends_on:
       - nginx-backend
-    networks: toolrent-network
+    networks:
+      - toolrent-network  # <--- CORREGIDO: Debe ser una lista
 
-nginx-frontend:
+  frontend2:
+    image: danielv28/tingeso_frontend:latest
+    depends_on:
+      - nginx-backend
+    networks:
+      - toolrent-network  # <--- CORREGIDO: Debe ser una lista
+
+  frontend3:
+    image: danielv28/tingeso_frontend:latest
+    depends_on:
+      - nginx-backend
+    networks:
+      - toolrent-network  # <--- CORREGIDO: Debe ser una lista
+
+  nginx-frontend: # <--- CORREGIDO: Indentación arreglada (dentro de services)
     image: nginx:latest
     ports:
       - "5173:80"
@@ -39,18 +85,23 @@ nginx-frontend:
       - ./nginx-frontend.conf:/etc/nginx/nginx.conf
     depends_on:
       - frontend1
-    networks: toolrent-network
+      - frontend2
+      - frontend3
+    networks:
+      - toolrent-network  # <--- CORREGIDO
 
-nginx-backend:
+  nginx-backend: # <--- CORREGIDO: Indentación arreglada (dentro de services)
     image: nginx:latest
     ports:
-      - "8090:8090"
+      - "8090:8090" # Este Nginx da la cara al mundo en el puerto 8090
     volumes:
       - ./nginx-backend.conf:/etc/nginx/nginx.conf
     depends_on:
       - backend1
-    networks: toolrent-network
-
+      - backend2
+      - backend3
+    networks:
+      - toolrent-network  # <--- CORREGIDO
 
 networks:
   toolrent-network:
